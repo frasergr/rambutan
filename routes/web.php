@@ -14,3 +14,5 @@
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::post('/itn', 'ItnController@itnTypeHandler')->middleware('validate.itn');
