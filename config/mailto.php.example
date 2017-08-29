@@ -1,0 +1,8 @@
+<?php
+
+    return [
+        'error_notify' => [
+            'email@email.com',
+            'email2@email.com',
+        ],
+    ];

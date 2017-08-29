@@ -28,15 +28,14 @@ class ApiController extends Controller
                 'query' => http_build_query($params)
             ]);
         } catch (GuzzleException $e) {
-            if ($e->hasResponse()) {
-                $error = array(
-                    'api' => $api,
-                    'error' => json_decode($e->getResponse()->getBody()->getContents(), true)['response']['message']
-                );
-//                ExceptionController::emailError($subject = "Invalid R_API '" . $api . "' Request", $error);
-                return response($error, 400)->throwResponse();
-            }
+            $error = array(
+                'api' => $api,
+                'error' => json_decode($e->getResponse()->getBody()->getContents(), true)['response']['message']
+            );
+            ExceptionController::insertException('api', 'providerGetApi', $error);
+            return response($error, 400)->throwResponse();
         }
+
         return json_decode($response->getBody(), true);
     }
 
@@ -60,15 +59,16 @@ class ApiController extends Controller
                 ],
                 'form_params' => $params
             ]);
-            return json_decode($response->getBody(), true);
         } catch (GuzzleException $e) {
             $error = array(
                 'api' => $api,
                 'error' => json_decode($e->getResponse()->getBody()->getContents(), true)['response']['message']
             );
-//            ExceptionController::emailError($subject = "Invalid R_API '" . $api . "' Request", $error);
+            ExceptionController::insertException('api', 'providerPutApi', $error);
             return response($error, 400)->throwResponse();
         }
+
+        return json_decode($response->getBody(), true);
     }
 
     /**
@@ -91,14 +91,15 @@ class ApiController extends Controller
                 ],
                 'form_params' => $params
             ]);
-            return json_decode($response->getBody(), true);
         } catch (GuzzleException $e) {
             $error = array(
                 'api' => $api,
                 'error' => json_decode($e->getResponse()->getBody()->getContents(), true)['response']['message']
             );
-//            ExceptionController::emailError($subject = "Invalid R_API '" . $api . "' Request", $error);
+            ExceptionController::insertException('api', 'providerPostApi', $error);
             return response($error, 400)->throwResponse();
         }
+
+        return json_decode($response->getBody(), true);
     }
 }

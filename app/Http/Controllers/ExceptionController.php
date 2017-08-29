@@ -3,22 +3,22 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Database\QueryException;
-//use Illuminate\Support\Facades\Mail;
-//use App\Mail\ExceptionEmail;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ExceptionEmail;
 use App\Exception;
 
 class ExceptionController extends Controller
 {
-//    /**
-//     * Sends an email to administrators with error details
-//     *
-//     * @param $subject
-//     * @param $error
-//     */
-//    public static function emailError($subject, $error)
-//    {
-//        Mail::to(config('mailto.error_notify'))->send(new ExceptionEmail($subject, $error));
-//    }
+    /**
+     * Sends an email to administrators with error details
+     *
+     * @param $subject
+     * @param $error
+     */
+    public static function emailError($subject, $error)
+    {
+        Mail::to(config('mailto.error_notify'))->send(new ExceptionEmail($subject, $error));
+    }
 
     /**
      * Inserts an Exception entry into DB
@@ -39,7 +39,7 @@ class ExceptionController extends Controller
         try {
             $exception->save();
         } catch (QueryException $e) {
-//            self::emailError('Unable to save Exception to DB', $e->getMessage());
+            self::emailError('Unable to save Exception to DB', $e->getMessage());
         }
 
         return $exception;
