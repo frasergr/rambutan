@@ -79,6 +79,9 @@ class ItnController extends Controller
             return response($error,400)->throwResponse();
         }
 
+        $customer = new CustomerController();
+        $customer->createOrUpdateCustomerFromEvent($itn);
+
         return $itn;
     }
 }
