@@ -33,7 +33,7 @@ class CreateCustomersTable extends Migration
             $table->string('shipping_state')->nullable();
             $table->string('shipping_country')->nullable();
             $table->string('shipping_postal_code')->nullable();
-            $table->string('query')->nullable();
+            $table->text('query')->nullable();
             $table->timestamps();
         });
     }

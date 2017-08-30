@@ -15,7 +15,7 @@ class ValidateItn
      */
     public function handle($request, Closure $next)
     {
-        $xmlSignature = $request->hasHeader(env('R_ITN_SIG')) ? $request->header(env('ITN_SIG')) : null;
+        $xmlSignature = $request->hasHeader(env('ITN_SIG')) ? $request->header(env('ITN_SIG')) : null;
         $contentSignature = base64_encode(hash_hmac('sha256', $request->getContent(), env('ITN_SECRET')));
 
         if ($xmlSignature !== $contentSignature) {
