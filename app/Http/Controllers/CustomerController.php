@@ -27,6 +27,7 @@ class CustomerController extends Controller
                     break;
                 case 'TSA':
                 case 'RB':
+                case 'SA':
                     $customer->status = 'active';
                     break;
             }
@@ -58,10 +59,9 @@ class CustomerController extends Controller
 
             switch ($itn->status_code) {
                 case 'TR':
-                    $customer->status = 'pending';
-                    break;
                 case 'TSA':
                 case 'RB':
+                case 'SA':
                     $customer->status = 'active';
                     break;
             }
