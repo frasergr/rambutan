@@ -16,4 +16,3 @@ Route::get('/', function () {
 });
 
 Route::post('/itn', 'ItnController@itnTypeHandler')->middleware('validate.itn');
-Route::post('/itn-noauth', 'ItnController@itnTypeHandler');
