@@ -37,7 +37,7 @@ class CustomerController extends Controller
             $xml = simplexml_load_string($itn->xml);
 
             $customer = new Customer([
-                'original_order_id' => $xml->attributes()->id . '-' . $xml->attributes()->ref,
+                'original_order_id' => $xml->attributes()->id,
                 'name' => $xml->customer->name,
                 'email' => $xml->customer->email,
                 'region' => $xml->customer->region ? $xml->customer->region : null,

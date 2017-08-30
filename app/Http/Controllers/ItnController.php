@@ -62,7 +62,7 @@ class ItnController extends Controller
             'type' => $this->itn_type ? $this->itn_type : (string) $this->xml->event->attributes()->type,
             'status_code' => $this->itn_status_code ? $this->itn_status_code : (string) $this->xml->event->attributes()->status_code,
             'email' => $this->xml->order->customerEmail ? $this->xml->order->customerEmail : $this->xml->customer->email,
-            'order_id' => $this->order_id ? $this->order_id : $this->xml->attributes()->id,
+            'order_id' => $this->order_id ? $this->order_id : $this->xml->attributes()->id . '-' . $this->xml->attributes()->ref,
             'xml' => $this->xml_raw
         ]);
 
