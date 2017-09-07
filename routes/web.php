@@ -15,4 +15,9 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/auth/asana', 'ViewController@authAsana');
+
 Route::post('/itn', 'ItnController@itnTypeHandler')->middleware('validate.itn');
+Auth::routes();
+
+Route::get('/home', 'HomeController@index')->name('home');
