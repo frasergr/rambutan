@@ -15,8 +15,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/auth/asana', 'ViewController@authAsana');
-
 Route::post('/itn', 'ItnController@itnTypeHandler')->middleware('validate.itn');
 Auth::routes();
 
