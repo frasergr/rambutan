@@ -11,6 +11,12 @@ class Itn extends Model
         'status_code',
         'email',
         'order_id',
+        'order_ref',
         'xml'
     ];
+
+    public function customer()
+    {
+        return $this->belongsTo('App\Customer');
+    }
 }

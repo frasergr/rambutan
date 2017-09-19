@@ -59,28 +59,32 @@ class ItnController extends Controller
         parse_str(urldecode($this->xml->extra->request), $query);
 
         $itn = new Itn([
-            'type' => $this->itn_type ? $this->itn_type : (string) $this->xml->event->attributes()->type,
-            'status_code' => $this->itn_status_code ? $this->itn_status_code : (string) $this->xml->event->attributes()->status_code,
-            'email' => $this->xml->order->customerEmail ? $this->xml->order->customerEmail : $this->xml->customer->email,
-            'order_id' => $this->order_id ? $this->order_id : $this->xml->attributes()->id . '-' . $this->xml->attributes()->ref,
+            'type' => $this->itn_type ? (string) $this->itn_type : (string) $this->xml->event->attributes()->type,
+            'status_code' => $this->itn_status_code ? (string) $this->itn_status_code : (string) $this->xml->event->attributes()->status_code,
+            'email' => $this->xml->order->customerEmail ? (string) $this->xml->order->customerEmail : (string) $this->xml->customer->email,
+            'order_id' => $this->order_id ? $this->order_id : (string) $this->xml->attributes()->id,
+            'order_ref' => $this->xml->attributes()->ref ? (string) $this->xml->attributes()->ref : null,
             'xml' => $this->xml_raw
         ]);
 
+        $createOrUpdateCustomer = new CustomerController();
+        $customerId = $createOrUpdateCustomer->createOrUpdateCustomerFromEvent($itn);
+
         try {
+            $itn->customer()->associate($customerId);
+
             $itn->save();
         } catch (QueryException $e) {
             $error = array(
+                'function' => __FUNCTION__,
                 'error_code' => $e->errorInfo[1],
                 'message' => $e->errorInfo[2],
             );
 
-            ExceptionController::insertException('itn', 'storeItn', $error);
+            ExceptionController::insertException('itn', __FUNCTION__, $error);
 
             return response($error,400)->throwResponse();
         }
-
-        $customer = new CustomerController();
-        $customer->createOrUpdateCustomerFromEvent($itn);
 
         return $itn;
     }

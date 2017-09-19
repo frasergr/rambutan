@@ -27,4 +27,9 @@ class Customer extends Model
         'shipping_postal_code',
         'query',
     ];
+
+    public function itns()
+    {
+        return $this->hasMany('App\Itn');
+    }
 }

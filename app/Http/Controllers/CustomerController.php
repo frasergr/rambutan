@@ -19,7 +19,8 @@ class CustomerController extends Controller
     public function createOrUpdateCustomerFromEvent($itn)
     {
         try {
-            $customer = Customer::where('original_order_id', $itn->order_id)->firstOrFail();
+//            dd(Customer::where('original_order_id', $itn->order_id . '-' . $itn->order_ref)->firstOrFail());
+            $customer = Customer::where('original_order_id', $itn->order_id . '-' . $itn->order_ref)->firstOrFail();
 
             switch ($itn->status_code) {
                 case 'CA':
@@ -37,7 +38,7 @@ class CustomerController extends Controller
             $xml = simplexml_load_string($itn->xml);
 
             $customer = new Customer([
-                'original_order_id' => $xml->attributes()->id,
+                'original_order_id' => $xml->attributes()->id . '-' . $xml->attributes()->ref,
                 'name' => $xml->customer->name,
                 'email' => $xml->customer->email,
                 'region' => $xml->customer->region ? $xml->customer->region : null,
@@ -70,11 +71,12 @@ class CustomerController extends Controller
                 $customer->save();
             } catch (QueryException $e) {
                 $error = array(
+                    'function' => __FUNCTION__,
                     'error_code' => $e->errorInfo[1],
                     'message' => $e->errorInfo[2],
                 );
 
-                ExceptionController::insertException('customer', 'createOrUpdateCustomerFromEvent', $error);
+                ExceptionController::insertException('customer', __FUNCTION__, $error);
 
                 return response($error,400)->throwResponse();
             }

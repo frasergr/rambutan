@@ -19,6 +19,7 @@ class CreateItnsTable extends Migration
             $table->string('status_code');
             $table->string('email');
             $table->string('order_id');
+            $table->string('order_ref');
             $table->text('xml');
             $table->timestamps();
         });
