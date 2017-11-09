@@ -9,6 +9,7 @@ class Customer extends Model
     protected $fillable = [
         'status',
         'original_order_id',
+        'original_ref',
         'name',
         'email',
         'region',

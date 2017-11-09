@@ -17,6 +17,7 @@ class CreateCustomersTable extends Migration
             $table->increments('id');
             $table->string('status');
             $table->string('original_order_id')->unique();
+            $table->string('original_ref')->nullable();
             $table->string('name');
             $table->string('email');
             $table->string('region', 2)->nullable();

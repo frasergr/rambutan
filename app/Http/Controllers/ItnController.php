@@ -8,63 +8,77 @@ use Illuminate\Http\Request;
 
 class ItnController extends Controller
 {
-    private $itn_type, $itn_status_code, $xml, $xml_raw, $order_id;
-
-    /**
-     * Handles unique types of ITNs
-     *
-     * SA ITN with $0.00 = trial
-     *
-     * Profile changed unique XML structure handling
-     * Recurring 0 = cancelled
-     * Recurring 1 = reactivated (currently, provider ITN for this does not exist)
-     *
-     * The route for this function is protected by the ValidateItn.php middleware
-     *
-     * @param Request $request
-     * @return bool|string
-     */
     public function itnTypeHandler(Request $request)
     {
-        $this->xml_raw = $request->getContent();
-        $this->xml = simplexml_load_string($request->getContent());
+        try {
+            $xml = simplexml_load_string($request->getContent());
+            $xml_raw = $request->getContent();
 
-        if ($this->xml->order && $this->xml->order->orderId) {
-            if ((int) $this->xml->order->item->recurring === 0) {
-                $this->itn_type = 'cancellation';
-                $this->itn_status_code = 'CA';
-                $this->order_id = $this->xml->order->orderId;
-            } else if ((int) $this->xml->order->item->recurring === 1) {
-                $this->itn_type = 'reactivation';
-                $this->itn_status_code = 'RA';
-                $this->order_id = $this->xml->order->orderId;
+            if (isset($xml->order->orderId)) {
+                $order_id = $xml->order->orderId;
+                $order_ref = null;
+                $type = 'cancellation';
+                $status_code = 'CA';
+                $email = $xml->order->customerEmail;
+            } else {
+                switch ($xml->event->attributes()->status_code) {
+                    case 'SA':
+                        $order_id = $xml->attributes()->id;
+                        $order_ref = $xml->attributes()->ref;
+                        $email = $xml->customer->email;
+                        if ((string) $xml->event->sale->attributes()->amount === '0.00') {
+                            $type = 'trial';
+                            $status_code = 'TR';
+                        } else {
+                            $type = $xml->event->attributes()->type;
+                            $status_code = $xml->event->attributes()->status_code;
+                        }
+                        break;
+                    case 'RB':
+                    case 'RF':
+                    case 'PR':
+                    case 'CB':
+                    case 'TSA':
+                        $order_id = $xml->attributes()->id;
+                        $order_ref = $xml->attributes()->parent_ref;
+                        $email = $xml->customer->email;
+                        $type = $xml->event->attributes()->type;
+                        $status_code = $xml->event->attributes()->status_code;
+                }
             }
-        } else {
-            if ((string) $this->xml->event->attributes()->status_code === 'SA' && (string) $this->xml->event->sale->attributes()->amount === '0.00') {
-                $this->itn_type = 'trial';
-                $this->itn_status_code = 'TR';
-            }
+
+            $itnDetails = array(
+                'type' => isset($type) ? $type : 'ERROR',
+                'status_code' => isset($status_code) ? $status_code : 'ERROR',
+                'email' => isset($email) ? $email : 'ERROR',
+                'order_id' => isset($order_id) ? $order_id: 'ERROR',
+                'order_ref' => isset($order_ref) ? $order_ref : 'ERROR',
+                'xml' => isset($xml_raw) ? $xml_raw: 'ERROR',
+            );
+        } catch (\Exception $e) {
+            $error = array(
+                'function' => __FUNCTION__,
+                'error_code' => $e->getCode(),
+                'message' => $e->getMessage(),
+            );
+
+            ExceptionController::insertException('itn', __FUNCTION__, $error);
+
+            return response($error,400)->throwResponse();
         }
 
-        return $this->storeItn();
+        return $this->storeItn($itnDetails);
     }
 
-    /**
-     * Stores ITN in itns table
-     *
-     * @return bool|string
-     */
-    public function storeItn()
+    public function storeItn($itnDetails)
     {
-        parse_str(urldecode($this->xml->extra->request), $query);
-
         $itn = new Itn([
-            'type' => $this->itn_type ? (string) $this->itn_type : (string) $this->xml->event->attributes()->type,
-            'status_code' => $this->itn_status_code ? (string) $this->itn_status_code : (string) $this->xml->event->attributes()->status_code,
-            'email' => $this->xml->order->customerEmail ? (string) $this->xml->order->customerEmail : (string) $this->xml->customer->email,
-            'order_id' => $this->order_id ? $this->order_id : (string) $this->xml->attributes()->id,
-            'order_ref' => $this->xml->attributes()->ref ? (string) $this->xml->attributes()->ref : null,
-            'xml' => $this->xml_raw
+            'type' => $itnDetails['type'],
+            'status_code' => $itnDetails['status_code'],
+            'email' => $itnDetails['email'],
+            'order_id' => $itnDetails['order_id'],
+            'order_ref' => $itnDetails['order_ref'],
+            'xml' => $itnDetails['xml']
         ]);
 
         $createOrUpdateCustomer = new CustomerController();
