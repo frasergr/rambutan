@@ -100,6 +100,6 @@ class ItnController extends Controller
             return response($error,400)->throwResponse();
         }
 
-        return $itn;
+        return response($itn, 200);
     }
 }
